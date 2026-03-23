@@ -1,0 +1,8 @@
+windows/out/
+android/NowLinkMobile/.gradle/
+android/NowLinkMobile/app/build/
+android/NowLinkMobile/local.properties
+*.user
+*.suo
+/.idea
+
