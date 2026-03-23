@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
 import androidx.core.content.ContextCompat
+import com.nowlink.mobile.R
 import com.nowlink.mobile.data.SettingsRepository
 import com.nowlink.mobile.model.NotificationPayload
 import java.time.Instant
@@ -23,8 +24,8 @@ class SmsReceiver : BroadcastReceiver() {
                     phoneId = settings.phoneId(),
                     category = "sms",
                     packageName = "android.sms",
-                    appName = "SMS",
-                    title = message.displayOriginatingAddress ?: "SMS",
+                    appName = context.getString(R.string.sms_app_name),
+                    title = message.displayOriginatingAddress ?: context.getString(R.string.sms_app_name),
                     body = message.displayMessageBody ?: "",
                     receivedAt = Instant.now().toString(),
                     smsSender = message.displayOriginatingAddress

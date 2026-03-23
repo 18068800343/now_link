@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">NowLink</string>
+    <string name="hero_subtitle">优先通过局域网转发 Android 通知</string>
+    <string name="section_device">本机信息</string>
+    <string name="label_model">设备型号</string>
+    <string name="label_phone_id">手机 ID</string>
+    <string name="section_permissions">必要授权</string>
+    <string name="action_grant_notification">开启通知读取权限</string>
+    <string name="action_ignore_battery">忽略电池优化</string>
+    <string name="section_pairing">配对</string>
+    <string name="action_scan_qr">扫描 Windows 配对二维码</string>
+    <string name="hint_host">Windows 主机名或 IP</string>
+    <string name="hint_port">端口</string>
+    <string name="action_pair_wifi">通过 Wi-Fi 配对</string>
+    <string name="action_start_service">启动转发服务</string>
+    <string name="relay_running">NowLink 转发服务正在运行</string>
+    <string name="relay_connected">已连接到 %1$s:%2$d</string>
+    <string name="relay_channel_name">NowLink 转发服务</string>
+    <string name="phone_app_name">电话</string>
+    <string name="call_status_title">来电状态</string>
+    <string name="unknown_number">未知号码</string>
+    <string name="sms_app_name">短信</string>
+    <string name="status_ready">准备就绪</string>
+    <string name="status_service_started">前台转发服务已启动</string>
+    <string name="status_paired">已与 %1$s 配对，地址 %2$s:%3$d</string>
+    <string name="status_pairing_rejected">Windows 端拒绝了配对</string>
+    <string name="status_pairing_failed">配对失败：%1$s</string>
+    <string name="status_qr_invalid">二维码内容无效：%1$s</string>
+    <string name="relay_not_paired">未配对</string>
+    <string name="status_template">%1$s\n通知读取权限=%2$s\n转发地址=%3$s</string>
+    <string name="error_missing_host">二维码里缺少主机地址</string>
+</resources>

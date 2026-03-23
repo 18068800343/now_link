@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Net;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -214,7 +215,17 @@ namespace NowLink.Service
 
         private static string LocalHost()
         {
-            return Dns.GetHostName();
+            var host = Dns.GetHostName();
+            var addresses = Dns.GetHostAddresses(host);
+            foreach (var address in addresses)
+            {
+                if (address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(address))
+                {
+                    return address.ToString();
+                }
+            }
+
+            return "127.0.0.1";
         }
 
         private static Task WriteJson(HttpListenerContext context, object payload)

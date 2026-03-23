@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.telephony.PhoneStateListener
@@ -16,6 +17,7 @@ import com.nowlink.mobile.model.NotificationPayload
 import com.nowlink.mobile.net.RelaySocket
 import java.time.Instant
 import java.util.UUID
+import com.nowlink.mobile.R
 
 class NotificationRelayService : Service() {
     private lateinit var settings: SettingsRepository
@@ -24,7 +26,12 @@ class NotificationRelayService : Service() {
     override fun onCreate() {
         super.onCreate()
         settings = SettingsRepository(this)
-        startForeground(17, foreground("NowLink relay is active"))
+        val notification = foreground(getString(R.string.relay_running))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(17, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(17, notification)
+        }
         connectIfConfigured()
         listenForCalls()
         RelayDispatcher.relay = { relaySocket.send(it) }
@@ -47,7 +54,7 @@ class NotificationRelayService : Service() {
         val host = settings.host() ?: return
         relaySocket.connect(host, settings.port(), settings.wsPath())
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(17, foreground("Connected to $host:${settings.port()}"))
+        manager.notify(17, foreground(getString(R.string.relay_connected, host, settings.port())))
     }
 
     private fun listenForCalls() {
@@ -67,9 +74,9 @@ class NotificationRelayService : Service() {
                         phoneId = settings.phoneId(),
                         category = "call",
                         packageName = "android.telephony",
-                        appName = "Phone",
-                        title = "Call status",
-                        body = phoneNumber ?: "Unknown number",
+                        appName = getString(R.string.phone_app_name),
+                        title = getString(R.string.call_status_title),
+                        body = phoneNumber ?: getString(R.string.unknown_number),
                         receivedAt = Instant.now().toString(),
                         phoneNumber = phoneNumber,
                         callState = callState
@@ -82,14 +89,14 @@ class NotificationRelayService : Service() {
     private fun foreground(message: String): Notification {
         val channelId = "nowlink_relay"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "NowLink Relay", NotificationManager.IMPORTANCE_LOW)
+            val channel = NotificationChannel(channelId, getString(R.string.relay_channel_name), NotificationManager.IMPORTANCE_LOW)
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
         }
 
         return NotificationCompat.Builder(this, channelId)
             .setSmallIcon(android.R.drawable.stat_notify_sync)
-            .setContentTitle("NowLink")
+            .setContentTitle(getString(R.string.app_name))
             .setContentText(message)
             .setOngoing(true)
             .build()

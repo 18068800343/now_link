@@ -21,6 +21,7 @@ $service = $shared + @(
 
 $tray = $shared + @(
     (Join-Path $root "NowLink.Tray\Program.cs"),
+    (Join-Path $root "NowLink.Tray\Localization.cs"),
     (Join-Path $root "NowLink.Tray\MainForm.cs"),
     (Join-Path $root "NowLink.Tray\PipeClient.cs"),
     (Join-Path $root "NowLink.Tray\PopupForm.cs")

@@ -1,3 +1,32 @@
 <resources>
     <string name="app_name">NowLink</string>
+    <string name="hero_subtitle">LAN-first Android relay companion</string>
+    <string name="section_device">This device</string>
+    <string name="label_model">Model</string>
+    <string name="label_phone_id">Phone ID</string>
+    <string name="section_permissions">Required grants</string>
+    <string name="action_grant_notification">Grant Notification Access</string>
+    <string name="action_ignore_battery">Ignore Battery Optimization</string>
+    <string name="section_pairing">Pairing</string>
+    <string name="action_scan_qr">Scan Windows Pair Payload</string>
+    <string name="hint_host">Windows host or IP</string>
+    <string name="hint_port">Port</string>
+    <string name="action_pair_wifi">Pair via Wi-Fi</string>
+    <string name="action_start_service">Start Relay Service</string>
+    <string name="relay_running">NowLink relay is active</string>
+    <string name="relay_connected">Connected to %1$s:%2$d</string>
+    <string name="relay_channel_name">NowLink Relay</string>
+    <string name="phone_app_name">Phone</string>
+    <string name="call_status_title">Call status</string>
+    <string name="unknown_number">Unknown number</string>
+    <string name="sms_app_name">SMS</string>
+    <string name="status_ready">Ready</string>
+    <string name="status_service_started">Foreground relay service started</string>
+    <string name="status_paired">Paired with %1$s at %2$s:%3$d</string>
+    <string name="status_pairing_rejected">Pairing rejected</string>
+    <string name="status_pairing_failed">Pairing failed: %1$s</string>
+    <string name="status_qr_invalid">QR payload is invalid: %1$s</string>
+    <string name="relay_not_paired">not paired</string>
+    <string name="status_template">%1$s\nNotification access=%2$s\nRelay=%3$s</string>
+    <string name="error_missing_host">Missing host in QR payload</string>
 </resources>

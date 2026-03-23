@@ -1,8 +1,10 @@
 package com.nowlink.mobile.service
 
 import android.app.Notification
+import android.content.Intent
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import androidx.core.content.ContextCompat
 import com.nowlink.mobile.data.SettingsRepository
 import com.nowlink.mobile.model.NotificationPayload
 import java.time.Instant
@@ -10,6 +12,7 @@ import java.util.UUID
 
 class NowLinkNotificationListenerService : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification) {
+        ContextCompat.startForegroundService(this, Intent(this, NotificationRelayService::class.java))
         val extras = sbn.notification.extras
         val settings = SettingsRepository(this)
         val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()

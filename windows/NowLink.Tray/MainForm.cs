@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Net;
+using System.Web;
 using System.Windows.Forms;
 using NowLink.Shared;
 
@@ -14,6 +15,7 @@ namespace NowLink.Tray
         private readonly ListBox _deviceBox;
         private readonly ListView _history;
         private readonly Label _status;
+        private readonly PictureBox _qrCode;
 
         public MainForm()
         {
@@ -43,7 +45,7 @@ namespace NowLink.Tray
                 Left = 22,
                 Top = 62,
                 Width = 170,
-                Text = "Modern Wi-Fi notification relay",
+                Text = Localization.Text("Modern Wi-Fi notification", "现代 Wi-Fi 通知转发"),
                 ForeColor = Color.FromArgb(163, 177, 196)
             });
             layout.Controls.Add(nav, 0, 0);
@@ -51,10 +53,10 @@ namespace NowLink.Tray
             var tabs = new TabControl { Dock = DockStyle.Fill };
             layout.Controls.Add(tabs, 1, 0);
 
-            var devices = new TabPage("Devices");
-            var notifications = new TabPage("Notifications");
-            var appearance = new TabPage("Appearance");
-            var advanced = new TabPage("Advanced");
+            var devices = new TabPage(Localization.Text("Devices", "设备"));
+            var notifications = new TabPage(Localization.Text("Notifications", "通知"));
+            var appearance = new TabPage(Localization.Text("Appearance", "外观"));
+            var advanced = new TabPage(Localization.Text("Advanced", "高级"));
             tabs.TabPages.Add(devices);
             tabs.TabPages.Add(notifications);
             tabs.TabPages.Add(appearance);
@@ -65,7 +67,7 @@ namespace NowLink.Tray
                 Left = 24,
                 Top = 24,
                 Width = 480,
-                Text = "Waiting for local service"
+                Text = Localization.Text("Waiting for local service", "等待本地服务启动")
             };
             devices.Controls.Add(_status);
 
@@ -73,19 +75,31 @@ namespace NowLink.Tray
             {
                 Left = 24,
                 Top = 56,
-                Width = 180,
+                Width = 220,
                 Height = 36,
-                Text = "Refresh Pair Payload"
+                Text = Localization.Text("Refresh Pair QR", "刷新配对二维码")
             };
             refresh.Click += (s, e) => RefreshBootstrap();
             devices.Controls.Add(refresh);
 
-            _pairingBox = new TextBox
+            _qrCode = new PictureBox
             {
                 Left = 24,
                 Top = 108,
-                Width = 540,
-                Height = 130,
+                Width = 220,
+                Height = 220,
+                SizeMode = PictureBoxSizeMode.Zoom,
+                BorderStyle = BorderStyle.FixedSingle,
+                BackColor = Color.White
+            };
+            devices.Controls.Add(_qrCode);
+
+            _pairingBox = new TextBox
+            {
+                Left = 264,
+                Top = 108,
+                Width = 300,
+                Height = 220,
                 Multiline = true,
                 ScrollBars = ScrollBars.Vertical
             };
@@ -94,9 +108,9 @@ namespace NowLink.Tray
             _deviceBox = new ListBox
             {
                 Left = 24,
-                Top = 258,
+                Top = 350,
                 Width = 540,
-                Height = 250
+                Height = 200
             };
             devices.Controls.Add(_deviceBox);
 
@@ -109,10 +123,10 @@ namespace NowLink.Tray
                 View = View.Details,
                 FullRowSelect = true
             };
-            _history.Columns.Add("Time", 150);
-            _history.Columns.Add("App", 140);
-            _history.Columns.Add("Title", 180);
-            _history.Columns.Add("Body", 220);
+            _history.Columns.Add(Localization.Text("Time", "时间"), 150);
+            _history.Columns.Add(Localization.Text("App", "应用"), 140);
+            _history.Columns.Add(Localization.Text("Title", "标题"), 180);
+            _history.Columns.Add(Localization.Text("Body", "内容"), 220);
             notifications.Controls.Add(_history);
 
             appearance.Controls.Add(new Label
@@ -120,14 +134,14 @@ namespace NowLink.Tray
                 Left = 24,
                 Top = 24,
                 Width = 400,
-                Text = "Theme, popup duration, and compact mode settings live here."
+                Text = Localization.Text("Theme, popup duration, and compact mode settings live here.", "主题、弹窗时长和紧凑模式设置放在这里。")
             });
             advanced.Controls.Add(new Label
             {
                 Left = 24,
                 Top = 24,
                 Width = 430,
-                Text = "Manual IP:Port fallback, logs, startup, and diagnostics live here."
+                Text = Localization.Text("Manual IP:Port fallback, logs, startup, and diagnostics live here.", "手动 IP:Port 配对、日志、开机启动和诊断放在这里。")
             });
 
             _pipeClient = new PipeClient();
@@ -148,12 +162,13 @@ namespace NowLink.Tray
                 using (var client = new WebClient())
                 {
                     _pairingBox.Text = client.DownloadString("http://127.0.0.1:39876/pair/bootstrap");
-                    _status.Text = "Loaded pair payload from local service";
+                    UpdateQrCode(_pairingBox.Text);
+                    _status.Text = Localization.Text("Loaded pair payload from local service", "已从本地服务加载配对内容");
                 }
             }
             catch (Exception ex)
             {
-                _status.Text = "Service unavailable: " + ex.Message;
+                _status.Text = Localization.Text("Service unavailable: ", "服务不可用：") + ex.Message;
             }
         }
 
@@ -167,16 +182,18 @@ namespace NowLink.Tray
 
             if (envelope.type == "historySnapshot")
             {
-                _status.Text = "Connected to local service";
+                _status.Text = Localization.Text("Connected to local service", "已连接到本地服务");
                 if (envelope.bootstrap != null)
                 {
                     _pairingBox.Text = Json.Serialize(envelope.bootstrap);
+                    UpdateQrCode(_pairingBox.Text);
                 }
                 ReplaceHistory(envelope.notifications);
             }
             else if (envelope.type == "bootstrap" && envelope.bootstrap != null)
             {
                 _pairingBox.Text = Json.Serialize(envelope.bootstrap);
+                UpdateQrCode(_pairingBox.Text);
             }
             else if (envelope.type == "devicePaired")
             {
@@ -207,6 +224,17 @@ namespace NowLink.Tray
             row.SubItems.Add(notification.title ?? "");
             row.SubItems.Add(notification.body ?? "");
             _history.Items.Insert(0, row);
+        }
+
+        private void UpdateQrCode(string payload)
+        {
+            if (string.IsNullOrWhiteSpace(payload))
+            {
+                return;
+            }
+
+            var encoded = HttpUtility.UrlEncode(payload);
+            _qrCode.LoadAsync("https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encoded);
         }
     }
 }

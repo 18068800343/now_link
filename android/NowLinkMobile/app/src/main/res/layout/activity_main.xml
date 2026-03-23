@@ -26,7 +26,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="NowLink"
+                    android:text="@string/app_name"
                     android:textColor="#FFFFFF"
                     android:textSize="28sp"
                     android:textStyle="bold" />
@@ -35,7 +35,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="LAN-first Android relay companion"
+                    android:text="@string/hero_subtitle"
                     android:textColor="#A8B5C8" />
 
                 <TextView
@@ -62,14 +62,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="This device"
+                    android:text="@string/section_device"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Model" />
+                    android:text="@string/label_model" />
 
                 <TextView
                     android:id="@+id/deviceNameValue"
@@ -80,7 +80,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Phone ID" />
+                    android:text="@string/label_phone_id" />
 
                 <TextView
                     android:id="@+id/phoneIdValue"
@@ -104,7 +104,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Required grants"
+                    android:text="@string/section_permissions"
                     android:textStyle="bold" />
 
                 <Button
@@ -112,14 +112,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="Grant Notification Access" />
+                    android:text="@string/action_grant_notification" />
 
                 <Button
                     android:id="@+id/ignoreBatteryButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Ignore Battery Optimization" />
+                    android:text="@string/action_ignore_battery" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -138,7 +138,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Pairing"
+                    android:text="@string/section_pairing"
                     android:textStyle="bold" />
 
                 <Button
@@ -146,21 +146,21 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="Scan Windows Pair Payload" />
+                    android:text="@string/action_scan_qr" />
 
                 <EditText
                     android:id="@+id/hostInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="Windows host or IP" />
+                    android:hint="@string/hint_host" />
 
                 <EditText
                     android:id="@+id/portInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:hint="Port"
+                    android:hint="@string/hint_port"
                     android:inputType="number"
                     android:text="39876" />
 
@@ -169,14 +169,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="Pair via Wi-Fi" />
+                    android:text="@string/action_pair_wifi" />
 
                 <Button
                     android:id="@+id/startServiceButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Start Relay Service" />
+                    android:text="@string/action_start_service" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

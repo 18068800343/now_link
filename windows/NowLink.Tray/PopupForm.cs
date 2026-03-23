@@ -35,7 +35,7 @@ namespace NowLink.Tray
                 Top = 46,
                 Width = 320,
                 ForeColor = Color.FromArgb(170, 182, 198),
-                Text = string.Format("{0}  {1}", notification.appName, notification.category)
+                Text = string.Format("{0}  {1}", notification.appName, TranslateCategory(notification.category))
             };
 
             var body = new Label
@@ -68,6 +68,21 @@ namespace NowLink.Tray
         {
             base.OnShown(e);
             _timer.Start();
+        }
+
+        private static string TranslateCategory(string category)
+        {
+            if (category == "sms")
+            {
+                return Localization.Text("SMS", "短信");
+            }
+
+            if (category == "call")
+            {
+                return Localization.Text("Call", "来电");
+            }
+
+            return Localization.Text("App", "应用");
         }
     }
 }
