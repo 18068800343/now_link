@@ -18,6 +18,8 @@
         android:allowBackup="true"
         android:icon="@android:drawable/stat_notify_sync"
         android:label="NowLink"
+        android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/Theme.NowLink">
 
         <activity

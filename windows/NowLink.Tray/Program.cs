@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Net;
 using System.Windows.Forms;
 
 namespace NowLink.Tray
@@ -9,6 +10,10 @@ namespace NowLink.Tray
         [STAThread]
         private static void Main()
         {
+            ServicePointManager.SecurityProtocol =
+                (SecurityProtocolType)3072 |
+                SecurityProtocolType.Tls11 |
+                SecurityProtocolType.Tls;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new TrayContext());

@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Net;
-using System.Web;
+using System.Net.Cache;
 using System.Windows.Forms;
 using NowLink.Shared;
 
@@ -230,11 +231,66 @@ namespace NowLink.Tray
         {
             if (string.IsNullOrWhiteSpace(payload))
             {
+                _qrCode.Image = null;
                 return;
             }
 
-            var encoded = HttpUtility.UrlEncode(payload);
-            _qrCode.LoadAsync("https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encoded);
+            try
+            {
+                var encoded = Uri.EscapeDataString(payload);
+                var loaded = TryLoadRemoteQr("https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encoded)
+                    || TryLoadRemoteQr("http://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encoded);
+
+                if (!loaded)
+                {
+                    throw new WebException(Localization.Text("Remote QR service returned no image.", "二维码服务没有返回图片。"));
+                }
+            }
+            catch (Exception ex)
+            {
+                _qrCode.Image = null;
+                _status.Text = Localization.Text("QR download failed: ", "二维码下载失败：") + ex.Message;
+            }
+        }
+
+        private bool TryLoadRemoteQr(string url)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Proxy = WebRequest.GetSystemWebProxy();
+            request.Proxy.Credentials = CredentialCache.DefaultCredentials;
+            request.CachePolicy = new HttpRequestCachePolicy(HttpRequestCacheLevel.NoCacheNoStore);
+            request.Timeout = 15000;
+            request.ReadWriteTimeout = 15000;
+            request.UserAgent = "NowLink/1.0";
+
+            try
+            {
+                using (var response = (HttpWebResponse)request.GetResponse())
+                using (var stream = response.GetResponseStream())
+                using (var memory = new MemoryStream())
+                {
+                    if (stream == null)
+                    {
+                        return false;
+                    }
+
+                    stream.CopyTo(memory);
+                    memory.Position = 0;
+                    var bitmap = Image.FromStream(memory);
+                    var old = _qrCode.Image;
+                    _qrCode.Image = new Bitmap(bitmap);
+                    if (old != null)
+                    {
+                        old.Dispose();
+                    }
+
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
