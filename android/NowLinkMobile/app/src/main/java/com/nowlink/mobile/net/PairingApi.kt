@@ -15,7 +15,14 @@ class PairingApi(private val client: OkHttpClient = OkHttpClient()) {
             .url("http://$host:$port/pair/bootstrap")
             .build()
         client.newCall(request).execute().use { response ->
-            val json = JSONObject(response.body?.string().orEmpty())
+            val text = response.body?.string().orEmpty()
+            if (!response.isSuccessful) {
+                throw IllegalStateException("HTTP ${response.code}: ${text.take(120)}")
+            }
+            if (!text.trimStart().startsWith("{")) {
+                throw IllegalStateException("Expected JSON but got: ${text.take(120)}")
+            }
+            val json = JSONObject(text)
             return PairBootstrap(
                 deviceId = json.optString("deviceId"),
                 deviceName = json.optString("deviceName"),
@@ -45,7 +52,14 @@ class PairingApi(private val client: OkHttpClient = OkHttpClient()) {
             .build()
 
         client.newCall(request).execute().use { response ->
-            return JSONObject(response.body?.string().orEmpty()).optBoolean("accepted")
+            val text = response.body?.string().orEmpty()
+            if (!response.isSuccessful) {
+                throw IllegalStateException("HTTP ${response.code}: ${text.take(120)}")
+            }
+            if (!text.trimStart().startsWith("{")) {
+                throw IllegalStateException("Expected JSON but got: ${text.take(120)}")
+            }
+            return JSONObject(text).optBoolean("accepted")
         }
     }
 }

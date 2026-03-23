@@ -5,39 +5,52 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import okhttp3.Response
 import org.json.JSONObject
 
 class RelaySocket(private val client: OkHttpClient = OkHttpClient()) {
     private var socket: WebSocket? = null
+    @Volatile private var connected = false
 
-    fun connect(host: String, port: Int, path: String) {
+    fun connect(
+        host: String,
+        port: Int,
+        path: String,
+        onConnected: (() -> Unit)? = null,
+        onDisconnected: ((String) -> Unit)? = null
+    ) {
         val request = Request.Builder()
             .url("ws://$host:$port$path")
             .build()
-        socket = client.newWebSocket(request, object : WebSocketListener() {})
+        socket?.cancel()
+        socket = client.newWebSocket(request, object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                connected = true
+                onConnected?.invoke()
+            }
+
+            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                connected = false
+                onDisconnected?.invoke("closed:$code:$reason")
+            }
+
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                connected = false
+                onDisconnected?.invoke("failure:${t.message}")
+            }
+        })
     }
 
-    fun send(payload: NotificationPayload) {
-        val json = JSONObject()
-            .put("eventId", payload.eventId)
-            .put("phoneId", payload.phoneId)
-            .put("category", payload.category)
-            .put("packageName", payload.packageName)
-            .put("appName", payload.appName)
-            .put("title", payload.title)
-            .put("body", payload.body)
-            .put("receivedAt", payload.receivedAt)
-            .put("iconRef", payload.iconRef)
-            .put("conversationId", payload.conversationId)
-            .put("phoneNumber", payload.phoneNumber)
-            .put("callState", payload.callState)
-            .put("smsSender", payload.smsSender)
-            .put("priority", payload.priority)
-        socket?.send(json.toString())
+    fun send(payload: NotificationPayload): Boolean {
+        if (!connected) return false
+        return socket?.send(payload.toJson().toString()) == true
     }
 
     fun close() {
+        connected = false
         socket?.close(1000, "bye")
         socket = null
     }
+
+    fun isConnected(): Boolean = connected
 }

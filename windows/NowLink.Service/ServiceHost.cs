@@ -28,8 +28,7 @@ namespace NowLink.Service
             Directory.CreateDirectory(_dataDir);
             _storage = new Storage(Path.Combine(_dataDir, "state.json"));
             _listener = new HttpListener();
-            _listener.Prefixes.Add(string.Format("http://127.0.0.1:{0}/", _storage.Snapshot().listenPort));
-            _listener.Prefixes.Add(string.Format("http://localhost:{0}/", _storage.Snapshot().listenPort));
+            AddListenerPrefixes(_listener, _storage.Snapshot().listenPort);
         }
 
         public void Start()
@@ -215,17 +214,39 @@ namespace NowLink.Service
 
         private static string LocalHost()
         {
+            foreach (var address in GetLocalIPv4Addresses())
+            {
+                return address.ToString();
+            }
+
+            return "127.0.0.1";
+        }
+
+        private static void AddListenerPrefixes(HttpListener listener, int port)
+        {
+            listener.Prefixes.Add(string.Format("http://127.0.0.1:{0}/", port));
+            listener.Prefixes.Add(string.Format("http://localhost:{0}/", port));
+
+            foreach (var address in GetLocalIPv4Addresses())
+            {
+                listener.Prefixes.Add(string.Format("http://{0}:{1}/", address, port));
+            }
+        }
+
+        private static List<IPAddress> GetLocalIPv4Addresses()
+        {
+            var result = new List<IPAddress>();
             var host = Dns.GetHostName();
             var addresses = Dns.GetHostAddresses(host);
             foreach (var address in addresses)
             {
                 if (address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(address))
                 {
-                    return address.ToString();
+                    result.Add(address);
                 }
             }
 
-            return "127.0.0.1";
+            return result;
         }
 
         private static Task WriteJson(HttpListenerContext context, object payload)

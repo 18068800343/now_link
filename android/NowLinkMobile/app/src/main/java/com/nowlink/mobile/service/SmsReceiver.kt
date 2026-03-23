@@ -6,6 +6,7 @@ import android.content.Intent
 import android.provider.Telephony
 import androidx.core.content.ContextCompat
 import com.nowlink.mobile.R
+import com.nowlink.mobile.data.DiagnosticLogger
 import com.nowlink.mobile.data.SettingsRepository
 import com.nowlink.mobile.model.NotificationPayload
 import java.time.Instant
@@ -17,8 +18,10 @@ class SmsReceiver : BroadcastReceiver() {
 
         ContextCompat.startForegroundService(context, Intent(context, NotificationRelayService::class.java))
         val settings = SettingsRepository(context)
+        val logger = DiagnosticLogger(context)
         for (message in Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
             RelayDispatcher.submit(
+                context,
                 NotificationPayload(
                     eventId = UUID.randomUUID().toString(),
                     phoneId = settings.phoneId(),
@@ -29,8 +32,10 @@ class SmsReceiver : BroadcastReceiver() {
                     body = message.displayMessageBody ?: "",
                     receivedAt = Instant.now().toString(),
                     smsSender = message.displayOriginatingAddress
-                )
+                ),
+                "smsReceiver"
             )
+            logger.log("captured sms sender=${message.displayOriginatingAddress} body=${(message.displayMessageBody ?: "").take(80)}")
         }
     }
 }
