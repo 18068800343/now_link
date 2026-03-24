@@ -17,6 +17,10 @@ namespace NowLink.Tray
         private readonly ListView _history;
         private readonly Label _status;
         private readonly PictureBox _qrCode;
+        private readonly TabControl _tabs;
+        private readonly Label _detailHeader;
+        private readonly Label _detailMeta;
+        private readonly TextBox _detailBody;
 
         public MainForm()
         {
@@ -51,17 +55,17 @@ namespace NowLink.Tray
             });
             layout.Controls.Add(nav, 0, 0);
 
-            var tabs = new TabControl { Dock = DockStyle.Fill };
-            layout.Controls.Add(tabs, 1, 0);
+            _tabs = new TabControl { Dock = DockStyle.Fill };
+            layout.Controls.Add(_tabs, 1, 0);
 
             var devices = new TabPage(Localization.Text("Devices", "设备"));
             var notifications = new TabPage(Localization.Text("Notifications", "通知"));
             var appearance = new TabPage(Localization.Text("Appearance", "外观"));
             var advanced = new TabPage(Localization.Text("Advanced", "高级"));
-            tabs.TabPages.Add(devices);
-            tabs.TabPages.Add(notifications);
-            tabs.TabPages.Add(appearance);
-            tabs.TabPages.Add(advanced);
+            _tabs.TabPages.Add(devices);
+            _tabs.TabPages.Add(notifications);
+            _tabs.TabPages.Add(appearance);
+            _tabs.TabPages.Add(advanced);
 
             _status = new Label
             {
@@ -120,7 +124,7 @@ namespace NowLink.Tray
                 Left = 18,
                 Top = 18,
                 Width = 710,
-                Height = 520,
+                Height = 280,
                 View = View.Details,
                 FullRowSelect = true
             };
@@ -128,7 +132,54 @@ namespace NowLink.Tray
             _history.Columns.Add(Localization.Text("App", "应用"), 140);
             _history.Columns.Add(Localization.Text("Title", "标题"), 180);
             _history.Columns.Add(Localization.Text("Body", "内容"), 220);
+            _history.SelectedIndexChanged += (s, e) => ShowSelectedNotificationDetail();
             notifications.Controls.Add(_history);
+
+            var detailPanel = new Panel
+            {
+                Left = 18,
+                Top = 320,
+                Width = 710,
+                Height = 220,
+                BackColor = Color.White
+            };
+            notifications.Controls.Add(detailPanel);
+
+            _detailHeader = new Label
+            {
+                Left = 18,
+                Top = 18,
+                Width = 560,
+                Height = 28,
+                Font = new Font("Segoe UI Semibold", 12.5f, FontStyle.Bold),
+                Text = Localization.Text("Select a notification", "请选择一条通知")
+            };
+            detailPanel.Controls.Add(_detailHeader);
+
+            _detailMeta = new Label
+            {
+                Left = 18,
+                Top = 52,
+                Width = 640,
+                Height = 22,
+                ForeColor = Color.FromArgb(90, 102, 119),
+                Text = Localization.Text("Details will appear here.", "通知详情会显示在这里。")
+            };
+            detailPanel.Controls.Add(_detailMeta);
+
+            _detailBody = new TextBox
+            {
+                Left = 18,
+                Top = 86,
+                Width = 670,
+                Height = 112,
+                Multiline = true,
+                ReadOnly = true,
+                BorderStyle = BorderStyle.FixedSingle,
+                BackColor = Color.White,
+                ScrollBars = ScrollBars.Vertical
+            };
+            detailPanel.Controls.Add(_detailBody);
 
             appearance.Controls.Add(new Label
             {
@@ -203,7 +254,7 @@ namespace NowLink.Tray
             else if (envelope.type == "notificationReceived" && envelope.notification != null)
             {
                 AppendHistory(envelope.notification);
-                var popup = new PopupForm(envelope.notification);
+                var popup = new PopupForm(envelope.notification, OpenNotificationFromPopup);
                 popup.Show();
             }
         }
@@ -224,7 +275,61 @@ namespace NowLink.Tray
             row.SubItems.Add(notification.appName ?? "");
             row.SubItems.Add(notification.title ?? "");
             row.SubItems.Add(notification.body ?? "");
+            row.Tag = notification;
             _history.Items.Insert(0, row);
+        }
+
+        private void ShowSelectedNotificationDetail()
+        {
+            if (_history.SelectedItems.Count == 0)
+            {
+                return;
+            }
+
+            var notification = _history.SelectedItems[0].Tag as NotificationEvent;
+            if (notification == null)
+            {
+                return;
+            }
+
+            _detailHeader.Text = string.IsNullOrWhiteSpace(notification.title) ? notification.appName : notification.title;
+            _detailMeta.Text = string.Format(
+                "{0}  |  {1}  |  {2}",
+                notification.appName ?? Localization.Text("App", "应用"),
+                TranslateCategory(notification.category),
+                notification.receivedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
+            _detailBody.Text = string.IsNullOrWhiteSpace(notification.body)
+                ? Localization.Text("No detail body.", "没有详情内容。")
+                : notification.body;
+        }
+
+        private void OpenNotificationFromPopup(NotificationEvent notification)
+        {
+            Show();
+            WindowState = FormWindowState.Normal;
+            Activate();
+            _tabs.SelectedIndex = 1;
+
+            foreach (ListViewItem item in _history.Items)
+            {
+                var rowNotification = item.Tag as NotificationEvent;
+                if (rowNotification != null && rowNotification.eventId == notification.eventId)
+                {
+                    item.Selected = true;
+                    item.Focused = true;
+                    item.EnsureVisible();
+                    ShowSelectedNotificationDetail();
+                    return;
+                }
+            }
+
+            AppendHistory(notification);
+            if (_history.Items.Count > 0)
+            {
+                _history.Items[0].Selected = true;
+                _history.Items[0].Focused = true;
+                ShowSelectedNotificationDetail();
+            }
         }
 
         private void UpdateQrCode(string payload)
@@ -291,6 +396,21 @@ namespace NowLink.Tray
             {
                 return false;
             }
+        }
+
+        private static string TranslateCategory(string category)
+        {
+            if (category == "sms")
+            {
+                return Localization.Text("SMS", "短信");
+            }
+
+            if (category == "call")
+            {
+                return Localization.Text("Call", "来电");
+            }
+
+            return Localization.Text("App", "应用");
         }
     }
 }

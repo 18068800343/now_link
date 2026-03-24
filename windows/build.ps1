@@ -15,6 +15,7 @@ $shared = @(
 
 $service = $shared + @(
     (Join-Path $root "NowLink.Service\Program.cs"),
+    (Join-Path $root "NowLink.Service\ServiceRuntime.cs"),
     (Join-Path $root "NowLink.Service\ServiceHost.cs"),
     (Join-Path $root "NowLink.Service\Storage.cs")
 )
@@ -30,8 +31,8 @@ $tray = $shared + @(
 $out = Join-Path $root "out\$Configuration"
 New-Item -ItemType Directory -Force -Path $out | Out-Null
 
-& $csc /target:exe /nologo "/out:$(Join-Path $out 'NowLink.Service.exe')" `
-  /r:System.dll /r:System.Core.dll /r:System.Web.Extensions.dll `
+& $csc /target:winexe /nologo "/out:$(Join-Path $out 'NowLink.Service.exe')" `
+  /r:System.dll /r:System.Core.dll /r:System.Web.Extensions.dll /r:System.Windows.Forms.dll /r:System.Drawing.dll /r:System.ServiceProcess.dll `
   @service
 
 & $csc /target:winexe /nologo "/out:$(Join-Path $out 'NowLink.Tray.exe')" `
